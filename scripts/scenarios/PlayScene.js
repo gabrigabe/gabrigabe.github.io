@@ -103,7 +103,6 @@ class PlayScene extends Phaser.Scene {
      update() {
         this.physics.world.setFPS(30);
         this.player.body.setVelocityX(0);
-        this.sfxJump = this.sound.add('pulo')
 
         text.y = this.cameras.main.scrollY + 150
         text.x = this.player.x  + 100
