@@ -13,7 +13,7 @@ class PlayScene extends Phaser.Scene {
         super('PlayScene');
     }
      preload(){
-        this.load.tilemapTiledJSON('mapa', 'gameassets/newmap.json')
+        this.load.tilemapTiledJSON('mapa', 'public/gameassets/newmap.json')
         this.load.scenePlugin({
             key:'AnimatedTiles',
             url:'https://raw.githubusercontent.com/nkholski/phaser-animated-tiles/master/dist/AnimatedTiles.js',
@@ -108,7 +108,6 @@ class PlayScene extends Phaser.Scene {
      update() {
         this.physics.world.setFPS(30);
         this.player.body.setVelocityX(0);
-        this.sfxJump = this.sound.add('pulo')
 
         text.y = this.cameras.main.scrollY + 150
         text.x = this.player.x  + 100
