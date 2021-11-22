@@ -92,6 +92,7 @@ class PlayScene extends Phaser.Scene {
         {
            player.anims.play('death', true)
            playerDyng = 1;
+           player.body.enable = false
 
            player.once('animationcomplete', () => {
             this.sfxDeath.play();
