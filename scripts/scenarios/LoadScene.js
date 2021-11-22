@@ -7,6 +7,9 @@ class LoadScene extends Phaser.Scene{
         this.load.spritesheet('player', 'public/gameassets/herochar_spritesheet.png', {frameWidth:15.8, frameHeight:16})
         this.load.image('tileset2', 'public/gameassets/tileset.png');
         this.coins = this.load.spritesheet("coins", "public/gameassets/coins.png", {frameWidth:16, frameHeight:16});
+        this.load.audio('pulo', "gameassets/Jump.wav");
+        this.load.audio('coin', "gameassets/CoinPick.wav");
+        this.load.audio('morte', "gameassets/Death.wav");
     }
 
     create() {

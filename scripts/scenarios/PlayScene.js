@@ -18,6 +18,9 @@ class PlayScene extends Phaser.Scene {
         let coins;
         let coinScore = 1;
         let text;
+        this.sfxCoin = this.sound.add('coin')
+        this.sfxDeath = this.sound.add('morte')
+        this.sfxJump = this.sound.add('pulo')
         const mapa = this.add.tilemap('mapa');
         const tileset = mapa.addTilesetImage('tileset', 'tileset2');
         const fundo = mapa.createLayer('fundo', tileset, 0,0);
@@ -54,6 +57,7 @@ class PlayScene extends Phaser.Scene {
         });
 
         function collectCoin(player, coin) {
+            this.sfxCoin.play()
             coin.destroy(coin.x, coin.y); 
             coinScore = coinScore ++; 
             return false;
@@ -62,7 +66,7 @@ class PlayScene extends Phaser.Scene {
 
         function hitDeadly (player, deadlys)
         {
-    
+            this.sfxDeath.play();
             player.body.enable = false
             this.scene.start('MenuScene');
         }
@@ -80,6 +84,7 @@ class PlayScene extends Phaser.Scene {
 
         
         if(!Phaser.Geom.Rectangle.Overlaps(this.physics.world.bounds, this.player.getBounds())){
+            this.sfxDeath.play();
             this.gameOver = true;
             this.player.body.enable = false
             this.scene.start('MenuScene')
@@ -95,6 +100,7 @@ class PlayScene extends Phaser.Scene {
             this.player.flipX = false
         }
         if(this.w.isDown && this.player.body.onFloor()){
+            this.sfxJump.play();
             this.player.body.setVelocityY(-250)
         }
 
