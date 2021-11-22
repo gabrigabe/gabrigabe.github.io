@@ -46,6 +46,12 @@ class LoadScene extends Phaser.Scene{
             frameRate: 5
         });
 
+        this.anims.create({
+            key: 'death',
+            frames: this.anims.generateFrameNumbers('player',{start: 64, end : 66}),
+            frameRate: 5
+        });
+
 
         
 

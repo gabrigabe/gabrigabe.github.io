@@ -5,6 +5,7 @@ let tesourosEncontrados = 0;
 let text;
 let textObjetivo;
 let GameOver;
+let playerDyng = 0;
 
 
 class PlayScene extends Phaser.Scene {
@@ -89,11 +90,15 @@ class PlayScene extends Phaser.Scene {
 
         function hitDeadly (player, deadlys)
         {
-            this.sfxDeath.play()
-            coinScore = 0;
-            player.anims.play('death')
-            player.body.enable = false
-            this.scene.start('MenuScene');
+           player.anims.play('death', true)
+           playerDyng = 1;
+
+           player.once('animationcomplete', () => {
+            this.sfxDeath.play();
+            console.log('animationcomplete')
+            player.destroy();
+            playerDyng = 0;
+          })
         }
 
 
@@ -139,10 +144,9 @@ class PlayScene extends Phaser.Scene {
             this.player.anims.play('pular', true);
         }else if(this.z.isDown){
             this.player.anims.play('atacar', true);
-        }
-        
-        else{
+        } else if(playerDyng == 0){
             this.player.anims.play('parado', true)
+
         }
         
 
