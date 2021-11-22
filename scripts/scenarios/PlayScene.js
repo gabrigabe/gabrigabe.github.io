@@ -120,7 +120,7 @@ class PlayScene extends Phaser.Scene {
             coinScore = 0
             this.gameOver = true;
             this.player.body.enable = false
-            this.scene.start('MenuScene')
+            this.player.destroy();
         }
 
 
