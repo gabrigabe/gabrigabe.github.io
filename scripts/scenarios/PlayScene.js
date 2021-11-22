@@ -13,6 +13,7 @@ class PlayScene extends Phaser.Scene {
         super('PlayScene');
     }
      preload(){
+        this.gameOver = false;
         playerDyng = 0
         this.load.tilemapTiledJSON('mapa', 'public/gameassets/newmap.json')
         this.load.scenePlugin({
@@ -96,6 +97,7 @@ class PlayScene extends Phaser.Scene {
            player.anims.play('death', true)
            playerDyng = 1;
            player.disableBody();
+           this.gameOver = true;
 
         
            player.once('animationcomplete', () => {
