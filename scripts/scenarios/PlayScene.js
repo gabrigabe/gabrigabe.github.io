@@ -13,6 +13,7 @@ class PlayScene extends Phaser.Scene {
         super('PlayScene');
     }
      preload(){
+        playerDyng = 0
         this.load.tilemapTiledJSON('mapa', 'public/gameassets/newmap.json')
         this.load.scenePlugin({
             key:'AnimatedTiles',
@@ -89,17 +90,30 @@ class PlayScene extends Phaser.Scene {
 
 
         function hitDeadly (player, deadlys)
-        {
+        {   
+            let x = player.x - 120;
+            let y = player.y - 100;
            player.anims.play('death', true)
            playerDyng = 1;
-           player.body.enable = false
+           player.disableBody();
 
+        
            player.once('animationcomplete', () => {
+            coinScore = 0;
             this.sfxDeath.play();
-            console.log('animationcomplete')
-            player.destroy();
-            playerDyng = 0;
+            this.add.text(x, y,
+                `GAME OVER`, {
+                fontSize: '50px',
+                fill: '#black'
+              })
+              this.add.text(x - 5, y + 50,
+                `Clique aqui para voltar ao menu`, {
+                fontSize: '15px',
+                fill: '#black'
+              }).setInteractive( {useHandCursor: true}).on('pointerdown', () => this.scene.start('MenuScene'))
+    
           })
+
         }
 
 
@@ -107,47 +121,50 @@ class PlayScene extends Phaser.Scene {
     }
     
      update() {
-        this.physics.world.setFPS(30);
-        this.player.body.setVelocityX(0);
 
         text.y = this.cameras.main.scrollY + 150
         text.x = this.player.x  + 100
         textObjetivo.y = this.cameras.main.scrollY + 180
         textObjetivo.x = this.player.x  + 60
-
     
         if(!Phaser.Geom.Rectangle.Overlaps(this.physics.world.bounds, this.player.getBounds())){
-            this.sfxDeath.play()
+            this.sfxDeath.play();
+            this.scene.start('MenuScene');
+
             coinScore = 0
-            this.gameOver = true;
-            this.player.body.enable = false
-            this.player.destroy();
+        }
+
+        if(!this.gameOver){
+            this.physics.world.setFPS(30);
+            this.player.body.setVelocityX(0);
+            if(this.a.isDown ){
+                this.player.body.setVelocityX(-50)
+                this.player.flipX = true
+            }
+            if(this.d.isDown){
+                this.player.body.setVelocityX(50)
+                this.player.flipX = false
+            }
+            if(this.w.isDown && this.player.body.onFloor()){
+                this.player.body.setVelocityY(-250)
+               this.sfxJump.play();
+            }
+    
+            if((this.a.isDown || this.d.isDown) && this.player.body.onFloor() ){
+                this.player.anims.play('andar',true);
+            }else if(this.w.isDown){
+                this.player.anims.play('pular', true);
+            }else if(this.z.isDown){
+                this.player.anims.play('atacar', true);
+            }else if(playerDyng === 0){
+                this.player.anims.play('parado', true)
+    
+            }
+
         }
 
 
-        if(this.a.isDown){
-            this.player.body.setVelocityX(-50)
-            this.player.flipX = true
-        }
-        if(this.d.isDown){
-            this.player.body.setVelocityX(50)
-            this.player.flipX = false
-        }
-        if(this.w.isDown && this.player.body.onFloor()){
-            this.player.body.setVelocityY(-250)
-            this.sfxJump.play();
-        }
-
-        if((this.a.isDown || this.d.isDown) && this.player.body.onFloor()){
-            this.player.anims.play('andar',true);
-        }else if(this.w.isDown){
-            this.player.anims.play('pular', true);
-        }else if(this.z.isDown){
-            this.player.anims.play('atacar', true);
-        } else if(playerDyng == 0){
-            this.player.anims.play('parado', true)
-
-        }
+        
         
 
     }
