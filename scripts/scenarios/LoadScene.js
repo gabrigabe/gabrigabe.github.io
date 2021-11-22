@@ -4,9 +4,9 @@ class LoadScene extends Phaser.Scene{
     }
 
     preload(){
-        this.load.spritesheet('player', 'gameassets/herochar_spritesheet.png', {frameWidth:15.8, frameHeight:16})
-        this.load.image('tileset2', 'gameassets/tileset.png');
-        this.coins = this.load.spritesheet("coins", "gameassets/coins.png", {frameWidth:16, frameHeight:16});
+        this.load.spritesheet('player', 'public/gameassets/herochar_spritesheet.png', {frameWidth:15.8, frameHeight:16})
+        this.load.image('tileset2', 'public/gameassets/tileset.png');
+        this.coins = this.load.spritesheet("coins", "public/gameassets/coins.png", {frameWidth:16, frameHeight:16});
     }
 
     create() {

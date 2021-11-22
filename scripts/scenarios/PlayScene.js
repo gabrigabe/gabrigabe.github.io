@@ -3,7 +3,7 @@ class PlayScene extends Phaser.Scene {
         super('PlayScene');
     }
      preload(){
-        this.load.tilemapTiledJSON('mapa', 'gameassets/newmap.json')
+        this.load.tilemapTiledJSON('mapa', 'public/gameassets/newmap.json')
         this.load.scenePlugin({
             key:'AnimatedTiles',
             url:'https://raw.githubusercontent.com/nkholski/phaser-animated-tiles/master/dist/AnimatedTiles.js',
