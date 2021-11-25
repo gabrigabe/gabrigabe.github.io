@@ -11,7 +11,7 @@ class LoadScene extends Phaser.Scene{
         this.load.audio('pulo', "gameassets/Jump.wav");
         this.load.audio('coin', "gameassets/CoinPick.wav");
         this.load.audio('morte', "gameassets/Death.wav");
-        this.load.audio('hitted', "gameassets/hitted.wav");
+        this.load.audio('hitted', "gameassets/Hitted.wav");
         this.load.audio('treasure', "gameassets/TreasurePick.wav");
     }
 
