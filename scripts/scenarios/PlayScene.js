@@ -1,10 +1,9 @@
 let coinLayer;
+let tesourosLayer;
 let coins;
-let coinScore = 0;
+let tesouros;
+let vidas = 3;
 let tesourosEncontrados = 0;
-let text;
-let textObjetivo;
-let GameOver;
 let playerDyng = 0;
 
 
@@ -15,7 +14,8 @@ class PlayScene extends Phaser.Scene {
      preload(){
         this.gameOver = false;
         playerDyng = 0
-        this.load.tilemapTiledJSON('mapa', 'public/gameassets/newmap.json')
+        tesourosEncontrados = 0;
+        this.load.tilemapTiledJSON('mapa', 'gameassets/newmap.json')
         this.load.scenePlugin({
             key:'AnimatedTiles',
             url:'https://raw.githubusercontent.com/nkholski/phaser-animated-tiles/master/dist/AnimatedTiles.js',
@@ -23,29 +23,34 @@ class PlayScene extends Phaser.Scene {
             systemKey:'animatedTiles'
         });
 
-
-        this.canvas = this.sys.game.canvas;
      }
 
 
      create() {
+        vidas = 3
+        this.scene.run('UIScene');
+        this.events.emit('GameStart');
         this.sfxCoin = this.sound.add('coin')
         this.sfxDeath = this.sound.add('morte')
         this.sfxJump = this.sound.add('pulo')
+        this.sfxHit = this.sound.add('hitted')
+        this.sfxTreasure = this.sound.add('treasure')
         const mapa = this.add.tilemap('mapa');
         const tileset = mapa.addTilesetImage('tileset', 'tileset2');
         const fundo = mapa.createLayer('fundo', tileset, 0,0);
         const solidos = mapa.createLayer('terrain', tileset, 0, 0);
         const deadlys = mapa.createLayer('machuca', tileset, 0, 0);
         coinLayer = mapa.getObjectLayer('moedas')['objects'];
-        coins = this.physics.add.staticGroup()
+        tesourosLayer = mapa.getObjectLayer('tesouro')['objects'];
+        coins = this.physics.add.staticGroup();
+        tesouros = this.physics.add.staticGroup();
         this.sys.animatedTiles.init(mapa);
         deadlys.setCollisionByProperty({deadly: true})
         fundo.setCollisionByProperty({solido: true})
         solidos.setCollisionByProperty({solido: true})
         this.cameras.main.setBounds(0,0,mapa.widthInPixels, mapa.heightInPixels)
         this.physics.world.setBounds( 0, 0, mapa.widthInPixels, mapa.heightInPixels);
-        this.cameras.main.setZoom(1.8)
+        this.cameras.main.setZoom(2)
         this.w = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W)
         this.a = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A)
         this.d = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D)
@@ -55,6 +60,7 @@ class PlayScene extends Phaser.Scene {
         this.physics.add.collider(this.player, fundo)
         this.physics.add.collider(this.player, deadlys, hitDeadly, null, this);
         this.physics.add.overlap(this.player, coins, collectCoin, null, this);
+        this.physics.add.overlap(this.player, tesouros, collectTreasure, null, this);
 
         this.teste = this.cameras.main.startFollow(this.player)
 
@@ -68,24 +74,33 @@ class PlayScene extends Phaser.Scene {
                this. obj.body.height = object.height; 
         });
 
-        text = this.add.text(this.cameras.main.x , this.cameras.main.y,
-            `Moedas: ${coinScore}`, {
-            fontSize: '20px',
-            fill: '#ffffff'
-          });
+        tesourosLayer.forEach(object => {
+            this.tesouro = tesouros.create(object.x, object.y, 'tesouro');
+              this.tesouro.setScale(object.width/32, object.height/32); 
+               this.tesouro.setOrigin(0); 
+               this.tesouro.body.width = object.width; 
+               this. tesouro.body.height = object.height; 
 
-        textObjetivo = this.add.text(this.cameras.main.x, this.cameras.main.y,
-            `Tesouros: ${tesourosEncontrados}/3`, {
-            fontSize: '20px',
-            fill: '#ffffff'
-          });
+        });
+
 
         function collectCoin(player, coin) {
             this.sfxCoin.play();
             coin.destroy(coin.x, coin.y); 
-            coinScore = coinScore + 1; 
-            text.setText(`Moedas: ${coinScore}`)
-            return false;
+            this.events.emit('addCoins')
+        }
+
+        function collectTreasure(player, tesouros) {
+            this.sfxTreasure.play();
+            tesouros.destroy(tesouros.x, tesouros.y); 
+            tesourosEncontrados = tesourosEncontrados + 1; 
+            this.events.emit('addTreasure')
+
+            if(tesourosEncontrados === 3 ){
+                this.events.emit('GameOver');
+                this.scene.start('SucessScene');
+            }
+
         }
 
 
@@ -94,57 +109,82 @@ class PlayScene extends Phaser.Scene {
         {   
             let x = player.x - 120;
             let y = player.y - 100;
-           player.anims.play('death', true)
+
+           vidas = vidas - 1;
            playerDyng = 1;
-           player.disableBody();
-           this.gameOver = true;
+           this.events.emit('removeLife')
+
+           if(vidas >= 0 && vidas < 3){
+            player.anims.play('hit', true)
+            player.once('animationcomplete', () => {
+                playerDyng = 0
+
+            })
+            if(player.flipX){
+                player.x = player.x + 100
+            }else if(!player.flipX){
+                player.x = player.x - 100
+            }
+            this.sfxHit.play();
+           }
+
+           if(vidas === -1){
+            player.anims.play('death', true)
+            playerDyng = 1;
+            player.disableBody();
+            this.gameOver= true;
+
+            player.once('animationcomplete', () => {
+                this.events.emit('GameOver');
+                this.scene.start('GameOverScene')
 
         
-           player.once('animationcomplete', () => {
-            coinScore = 0;
-            this.sfxDeath.play();
-            this.add.text(x, y,
-                `GAME OVER`, {
-                fontSize: '50px',
-                fill: '#black'
               })
-              this.add.text(x - 5, y + 50,
-                `Clique aqui para voltar ao menu`, {
-                fontSize: '15px',
-                fill: '#black'
-              }).setInteractive( {useHandCursor: true}).on('pointerdown', () => this.scene.start('MenuScene'))
-    
-          })
-
+           }
         }
-
-
 
     }
     
      update() {
 
-        text.y = this.cameras.main.scrollY + 150
-        text.x = this.player.x  + 100
-        textObjetivo.y = this.cameras.main.scrollY + 180
-        textObjetivo.x = this.player.x  + 60
     
         if(!Phaser.Geom.Rectangle.Overlaps(this.physics.world.bounds, this.player.getBounds())){
-            this.sfxDeath.play();
-            this.scene.start('MenuScene');
+            let x = this.player.x - 120;
+            let y = this.player.y - 100;
+            playerDyng = 1;
+            vidas = vidas - 1;
+ 
+            if(vidas >= 0 && vidas < 3){
+            playerDyng = 0
+            this.player.anims.play('hit', true)
+            this.events.emit('removeLife')
+             if(this.player.flipX){
+                this.player.y =  this.player.y - 150
+                this.player.x =  this.player.x + 100
 
-            coinScore = 0
+             }else if(!this.player.flipX){
+                this.player.y =  this.player.y - 150
+                this.player.x =  this.player.x - 100
+
+             }
+
+             this.sfxHit.play();
+            }
+            else if(vidas  === -1){
+                this.events.emit('GameOver');
+                this.scene.start('GameOverScene')
+
+            }
         }
 
         if(!this.gameOver){
-            this.physics.world.setFPS(30);
             this.player.body.setVelocityX(0);
             if(this.a.isDown ){
-                this.player.body.setVelocityX(-50)
+                this.player.body.setVelocityX(-45)
                 this.player.flipX = true
             }
             if(this.d.isDown){
-                this.player.body.setVelocityX(50)
+                this.player.body.setVelocityX(45)
                 this.player.flipX = false
             }
             if(this.w.isDown && this.player.body.onFloor()){
@@ -166,8 +206,6 @@ class PlayScene extends Phaser.Scene {
         }
 
 
-        
-        
 
     }
     
